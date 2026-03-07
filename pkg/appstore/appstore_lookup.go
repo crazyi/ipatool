@@ -24,10 +24,7 @@ func (t *appstore) Lookup(input LookupInput) (LookupOutput, error) {
 	var err error
 
 	if input.CountryCode != "" {
-		countryCode, err = storeFrontFromCountryCode(input.CountryCode)
-		if err != nil {
-			return LookupOutput{}, fmt.Errorf("country code is invalid: %w", err)
-		}
+		countryCode = input.CountryCode
 	} else {
 		countryCode, err = countryCodeFromStoreFront(input.Account.StoreFront)
 		if err != nil {

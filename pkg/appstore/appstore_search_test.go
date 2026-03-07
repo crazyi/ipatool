@@ -130,6 +130,14 @@ var _ = Describe("AppStore (Search)", func() {
 	})
 
 	When("country code is invalid", func() {
+		BeforeEach(func() {
+			mockClient.EXPECT().
+				Send(gomock.Any()).
+				Return(http.Result[searchResult]{
+					StatusCode: 400,
+				}, nil)
+		})
+
 		It("returns error", func() {
 			_, err := as.Search(SearchInput{
 				Account: Account{
