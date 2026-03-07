@@ -19,6 +19,7 @@ func downloadCmd() *cobra.Command {
 		appID             int64
 		bundleID          string
 		externalVersionID string
+		countryCode       string
 	)
 
 	cmd := &cobra.Command{
@@ -52,7 +53,7 @@ func downloadCmd() *cobra.Command {
 
 				app := appstore.App{ID: appID}
 				if bundleID != "" {
-					lookupResult, err := dependencies.AppStore.Lookup(appstore.LookupInput{Account: acc, BundleID: bundleID})
+					lookupResult, err := dependencies.AppStore.Lookup(appstore.LookupInput{Account: acc, BundleID: bundleID, CountryCode: countryCode})
 					if err != nil {
 						return err
 					}
@@ -135,6 +136,7 @@ func downloadCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&outputPath, "output", "o", "", "The destination path of the downloaded app package")
 	cmd.Flags().StringVar(&externalVersionID, "external-version-id", "", "External version identifier of the target iOS app (defaults to latest version when not specified)")
 	cmd.Flags().BoolVar(&acquireLicense, "purchase", false, "Obtain a license for the app if needed")
+	cmd.Flags().StringVarP(&countryCode, "country", "c", "", "The two-letter (ISO 3166-1) country code for the iTunes Store")
 
 	return cmd
 }

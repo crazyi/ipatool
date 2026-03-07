@@ -96,6 +96,51 @@ var _ = Describe("AppStore (Lookup)", func() {
 		})
 	})
 
+	When("country code is specified", func() {
+		var testApp = App{
+			ID:       1,
+			BundleID: "app.bundle.id",
+			Name:     "app name",
+			Version:  "1.0",
+			Price:    0.99,
+		}
+
+		BeforeEach(func() {
+			mockClient.EXPECT().
+				Send(gomock.Any()).
+				Return(http.Result[searchResult]{
+					StatusCode: 200,
+					Data: searchResult{
+						Count:   1,
+						Results: []App{testApp},
+					},
+				}, nil)
+		})
+
+		It("returns app using specified country code", func() {
+			app, err := as.Lookup(LookupInput{
+				Account: Account{
+					StoreFront: "143441",
+				},
+				CountryCode: "CN",
+			})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(app).To(Equal(LookupOutput{App: testApp}))
+		})
+	})
+
+	When("country code is invalid", func() {
+		It("returns error", func() {
+			_, err := as.Lookup(LookupInput{
+				Account: Account{
+					StoreFront: "143441",
+				},
+				CountryCode: "XX",
+			})
+			Expect(err).To(HaveOccurred())
+		})
+	})
+
 	When("request fails", func() {
 		BeforeEach(func() {
 			mockClient.EXPECT().

@@ -7,7 +7,10 @@ import (
 
 // nolint:wrapcheck
 func searchCmd() *cobra.Command {
-	var limit int64
+	var (
+		limit       int64
+		countryCode string
+	)
 
 	cmd := &cobra.Command{
 		Use:   "search <term>",
@@ -20,9 +23,10 @@ func searchCmd() *cobra.Command {
 			}
 
 			output, err := dependencies.AppStore.Search(appstore.SearchInput{
-				Account: infoResult.Account,
-				Term:    args[0],
-				Limit:   limit,
+				Account:     infoResult.Account,
+				Term:        args[0],
+				Limit:       limit,
+				CountryCode: countryCode,
 			})
 			if err != nil {
 				return err
@@ -38,6 +42,7 @@ func searchCmd() *cobra.Command {
 	}
 
 	cmd.Flags().Int64VarP(&limit, "limit", "l", 5, "maximum amount of search results to retrieve")
+	cmd.Flags().StringVarP(&countryCode, "country", "c", "", "the two-letter (ISO 3166-1) country code for the iTunes Store")
 
 	return cmd
 }

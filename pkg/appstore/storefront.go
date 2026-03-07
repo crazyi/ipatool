@@ -17,6 +17,15 @@ func countryCodeFromStoreFront(storeFront string) (string, error) {
 	return "", fmt.Errorf("country code mapping for store front (%s) was not found", storeFront)
 }
 
+func storeFrontFromCountryCode(countryCode string) (string, error) {
+	storeFront, ok := storeFronts[countryCode]
+	if !ok {
+		return "", fmt.Errorf("unknown country code: %s", countryCode)
+	}
+
+	return storeFront, nil
+}
+
 var storeFronts = map[string]string{
 	"AE": "143481",
 	"AG": "143540",
