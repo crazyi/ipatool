@@ -80,7 +80,6 @@ func downloadCmd() *cobra.Command {
 						progressbar.OptionSetWriter(os.Stdout),
 						progressbar.OptionShowBytes(true),
 						progressbar.OptionSetWidth(20),
-						progressbar.OptionFullWidth(),
 						progressbar.OptionThrottle(65*time.Millisecond),
 						progressbar.OptionShowCount(),
 						progressbar.OptionClearOnFinish(),
