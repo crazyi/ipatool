@@ -152,6 +152,57 @@ var _ = Describe("AppStore (Purchase)", func() {
 		})
 	})
 
+	When("Sign In to the iTunes Store", func() {
+		BeforeEach(func() {
+			mockMachine.EXPECT().
+				MacAddress().
+				Return("00:00:00:00:00:00", nil)
+
+			mockPurchaseClient.EXPECT().
+				Send(gomock.Any()).
+				Return(http.Result[purchaseResult]{
+					Data: purchaseResult{
+						FailureType: FailureTypeSignInRequired,
+					},
+				}, nil)
+		})
+
+		It("returns error", func() {
+			err := as.Purchase(PurchaseInput{
+				Account: Account{
+					StoreFront: "143441",
+				},
+			})
+			Expect(err).To(HaveOccurred())
+		})
+	})
+
+	When("customer message indicates password has changed", func() {
+		BeforeEach(func() {
+			mockMachine.EXPECT().
+				MacAddress().
+				Return("00:00:00:00:00:00", nil)
+
+			mockPurchaseClient.EXPECT().
+				Send(gomock.Any()).
+				Return(http.Result[purchaseResult]{
+					Data: purchaseResult{
+						FailureType:     "some_other_failure",
+						CustomerMessage: CustomerMessagePasswordChanged,
+					},
+				}, nil)
+		})
+
+		It("returns password token expired error", func() {
+			err := as.Purchase(PurchaseInput{
+				Account: Account{
+					StoreFront: "143441",
+				},
+			})
+			Expect(err).To(MatchError(ErrPasswordTokenExpired))
+		})
+	})
+
 	When("store API returns customer error message", func() {
 		BeforeEach(func() {
 			mockMachine.EXPECT().
@@ -203,7 +254,34 @@ var _ = Describe("AppStore (Purchase)", func() {
 		})
 	})
 
-	When("account already has a license for the app", func() {
+	When("account already has a license for the app (failure type)", func() {
+		BeforeEach(func() {
+			mockMachine.EXPECT().
+				MacAddress().
+				Return("00:00:00:00:00:00", nil)
+
+			mockPurchaseClient.EXPECT().
+				Send(gomock.Any()).
+				Return(http.Result[purchaseResult]{
+					StatusCode: 200,
+					Data: purchaseResult{
+						FailureType:     FailureTypeLicenseAlreadyExists,
+						CustomerMessage: "An unknown error has occurred",
+					},
+				}, nil)
+		})
+
+		It("returns license already exists error", func() {
+			err := as.Purchase(PurchaseInput{
+				Account: Account{
+					StoreFront: "143441",
+				},
+			})
+			Expect(err).To(MatchError(ErrLicenseAlreadyExists))
+		})
+	})
+
+	When("account already has a license for the app (HTTP 500 legacy)", func() {
 		BeforeEach(func() {
 			mockMachine.EXPECT().
 				MacAddress().
@@ -217,13 +295,40 @@ var _ = Describe("AppStore (Purchase)", func() {
 				}, nil)
 		})
 
-		It("returns error", func() {
+		It("returns license already exists error", func() {
 			err := as.Purchase(PurchaseInput{
 				Account: Account{
 					StoreFront: "143441",
 				},
 			})
-			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ErrLicenseAlreadyExists))
+		})
+	})
+
+	When("device verification fails", func() {
+		BeforeEach(func() {
+			mockMachine.EXPECT().
+				MacAddress().
+				Return("00:00:00:00:00:00", nil)
+
+			mockPurchaseClient.EXPECT().
+				Send(gomock.Any()).
+				Return(http.Result[purchaseResult]{
+					StatusCode: 200,
+					Data: purchaseResult{
+						FailureType:     FailureTypeDeviceVerificationFailed,
+						CustomerMessage: "Your device or computer could not be verified. Contact support for assistance.",
+					},
+				}, nil)
+		})
+
+		It("returns password token expired error", func() {
+			err := as.Purchase(PurchaseInput{
+				Account: Account{
+					StoreFront: "143441",
+				},
+			})
+			Expect(err).To(MatchError(ErrPasswordTokenExpired))
 		})
 	})
 
