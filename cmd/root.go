@@ -38,7 +38,7 @@ func rootCmd() *cobra.Command {
 			OutputFormatJSON: {"json"},
 		}, enumflag.EnumCaseSensitive), "format", "", "sets output format for command; can be 'text', 'json'")
 	cmd.PersistentFlags().BoolVar(&verbose, "verbose", false, "enables verbose logs")
-	cmd.PersistentFlags().BoolVarP(&nonInteractive, "non-interactive", "", false, "run in non-interactive session")
+	cmd.PersistentFlags().BoolVar(&nonInteractive, "non-interactive", false, "run in non-interactive session")
 	cmd.PersistentFlags().StringVar(&keychainPassphrase, "keychain-passphrase", "", "passphrase for unlocking keychain")
 
 	cmd.AddCommand(authCmd())
