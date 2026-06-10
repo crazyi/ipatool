@@ -21,11 +21,12 @@ func downloadCmd() *cobra.Command {
 		bundleID          string
 		externalVersionID string
 		countryCode       string
+		platformValue     string
 	)
 
 	cmd := &cobra.Command{
 		Use:   "download",
-		Short: "Download (encrypted) iOS app packages from the App Store",
+		Short: "Download (encrypted) iOS and tvOS app packages from the App Store",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if appID == 0 && bundleID == "" {
 				return errors.New("either the app ID or the bundle identifier must be specified")
@@ -62,8 +63,18 @@ func downloadCmd() *cobra.Command {
 				}
 
 				app := appstore.App{ID: appID}
+				platform, err := appstore.ParsePlatform(platformValue)
+				if err != nil {
+					return err
+				}
+
 				if bundleID != "" {
-					lookupResult, err := dependencies.AppStore.Lookup(appstore.LookupInput{Account: acc, BundleID: bundleID, CountryCode: countryCode})
+				lookupResult, err := dependencies.AppStore.Lookup(appstore.LookupInput{
+					Account:     acc,
+					BundleID:    bundleID,
+					CountryCode: countryCode,
+					Platform:    platform,
+				})
 					if err != nil {
 						return err
 					}
@@ -82,7 +93,7 @@ func downloadCmd() *cobra.Command {
 						Msg("purchase")
 				}
 
-				interactive, _ := cmd.Context().Value("interactive").(bool)
+				interactive, _ := cmd.Context().Value(interactiveKey).(bool)
 				var progress *progressbar.ProgressBar
 				if interactive {
 					progress = progressbar.NewOptions64(1,
@@ -101,7 +112,13 @@ func downloadCmd() *cobra.Command {
 				}
 
 				out, err := dependencies.AppStore.Download(appstore.DownloadInput{
-					Account: acc, App: app, OutputPath: outputPath, Progress: progress, ExternalVersionID: externalVersionID})
+					Account:           acc,
+					App:               app,
+					OutputPath:        outputPath,
+					Progress:          progress,
+					ExternalVersionID: externalVersionID,
+					Platform:          platform,
+				})
 				if err != nil {
 					return err
 				}
@@ -144,6 +161,7 @@ func downloadCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&bundleID, "bundle-identifier", "b", "", "The bundle identifier of the target iOS app (overrides the app ID)")
 	cmd.Flags().StringVarP(&outputPath, "output", "o", "", "The destination path of the downloaded app package")
 	cmd.Flags().StringVar(&externalVersionID, "external-version-id", "", "External version identifier of the target iOS app (defaults to latest version when not specified)")
+	cmd.Flags().StringVar(&platformValue, "platform", "", "Platform to download for: iphone, ipad, or appletv")
 	cmd.Flags().BoolVar(&acquireLicense, "purchase", false, "Obtain a license for the app if needed")
 	cmd.Flags().StringVarP(&countryCode, "country", "c", "", "The two-letter (ISO 3166-1) country code for the iTunes Store")
 
