@@ -15,7 +15,7 @@ func searchCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "search <term>",
-		Short: "Search for iOS, iPadOS, tvOS, and visionOS apps available on the App Store",
+		Short: "Search for iOS, iPadOS, tvOS, visionOS, and macOS apps available on the App Store",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			infoResult, err := dependencies.AppStore.AccountInfo()
@@ -50,7 +50,7 @@ func searchCmd() *cobra.Command {
 
 	cmd.Flags().Int64VarP(&limit, "limit", "l", 5, "maximum amount of search results to retrieve; visionOS supports up to 12")
 	cmd.Flags().StringVarP(&countryCode, "country", "c", "", "The two-letter (ISO 3166-1) country code for the iTunes Store")
-	cmd.Flags().StringVar(&platformValue, "platform", "", "Platform to search: iphone (iOS), ipad (iPadOS), appletv (tvOS), or visionos")
+	cmd.Flags().StringVar(&platformValue, "platform", "", "Platform to search: iphone (iOS), ipad (iPadOS), appletv (tvOS), visionos, or macos")
 
 	return cmd
 }
